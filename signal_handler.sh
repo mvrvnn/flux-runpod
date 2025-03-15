@@ -25,8 +25,9 @@ trap 'handle_sigint' SIGINT
 # Start the Python application
 echo "Starting Flux application..."
 
-# Ensure we're using absolute paths
-python3 -u "${APP_DIR}/app/app.py" &
+# Use the correct path from the app directory
+cd "${APP_DIR}"
+python3 -u app/app.py &
 
 # Store child PID
 CHILD_PID=$!

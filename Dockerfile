@@ -22,7 +22,7 @@ WORKDIR ${APP_DIR}
 RUN mkdir -p ${APP_DIR}/app
 
 # Copy application files
-COPY app/* ${APP_DIR}/app/
+COPY app ${APP_DIR}/app/
 COPY requirements.txt ${APP_DIR}/
 COPY signal_handler.sh /usr/local/bin/
 
@@ -42,5 +42,5 @@ RUN mkdir -p ${RUNPOD_VOLUME_PATH}/models/flux1 \
     ${RUNPOD_VOLUME_PATH}/models/lora \
     ${RUNPOD_VOLUME_PATH}/outputs
 
-# Use Tini as the init process with subreaper mode
-ENTRYPOINT ["/usr/bin/tini", "-s", "--", "/usr/local/bin/signal_handler.sh"]
+# Use Tini as the init process with subreaper mode enabled
+ENTRYPOINT ["tini", "-s", "--", "/usr/local/bin/signal_handler.sh"]

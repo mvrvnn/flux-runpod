@@ -18,14 +18,21 @@ RUN apt-get update && apt-get install -y \
 # Set up working directory
 WORKDIR ${APP_DIR}
 
+# Create app directory structure
+RUN mkdir -p ${APP_DIR}/app
+
 # Copy application files
-COPY app/ ${APP_DIR}/app/
+COPY app/* ${APP_DIR}/app/
 COPY requirements.txt ${APP_DIR}/
 COPY signal_handler.sh /usr/local/bin/
 
 # Make signal handler executable and ensure Unix line endings
 RUN chmod +x /usr/local/bin/signal_handler.sh && \
     sed -i 's/\r$//' /usr/local/bin/signal_handler.sh
+
+# Verify app files exist
+RUN ls -la ${APP_DIR}/app/ && \
+    ls -la ${APP_DIR}/
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt

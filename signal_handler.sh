@@ -22,11 +22,25 @@ handle_sigint() {
 trap 'handle_sigterm' SIGTERM
 trap 'handle_sigint' SIGINT
 
+# Debug information
+echo "Current directory: $(pwd)"
+echo "APP_DIR: ${APP_DIR}"
+echo "Contents of APP_DIR:"
+ls -la ${APP_DIR}
+echo "Contents of APP_DIR/app:"
+ls -la ${APP_DIR}/app
+
 # Start the Python application
 echo "Starting Flux application..."
 
-# Use the correct path from the app directory
+# Ensure we're in the correct directory and the app exists
 cd "${APP_DIR}"
+if [ ! -f "app/app.py" ]; then
+    echo "Error: app/app.py not found in ${APP_DIR}/app/"
+    exit 1
+fi
+
+# Run the application
 python3 -u app/app.py &
 
 # Store child PID

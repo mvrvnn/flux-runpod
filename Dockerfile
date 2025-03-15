@@ -22,7 +22,7 @@ WORKDIR ${APP_DIR}
 RUN mkdir -p ${APP_DIR}/app
 
 # Copy application files
-COPY app ${APP_DIR}/app/
+COPY app/ ${APP_DIR}/app/
 COPY requirements.txt ${APP_DIR}/
 COPY signal_handler.sh /usr/local/bin/
 
@@ -30,9 +30,11 @@ COPY signal_handler.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/signal_handler.sh && \
     sed -i 's/\r$//' /usr/local/bin/signal_handler.sh
 
-# Verify app files exist
-RUN ls -la ${APP_DIR}/app/ && \
-    ls -la ${APP_DIR}/
+# Debug: List contents to verify files
+RUN echo "Contents of ${APP_DIR}:" && \
+    ls -la ${APP_DIR} && \
+    echo "Contents of ${APP_DIR}/app:" && \
+    ls -la ${APP_DIR}/app
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
@@ -42,5 +44,11 @@ RUN mkdir -p ${RUNPOD_VOLUME_PATH}/models/flux1 \
     ${RUNPOD_VOLUME_PATH}/models/lora \
     ${RUNPOD_VOLUME_PATH}/outputs
 
-# Use Tini as the init process with subreaper mode enabled
-ENTRYPOINT ["tini", "-s", "--", "/usr/local/bin/signal_handler.sh"]
+# Set permissions for the volume mount point
+RUN chmod -R 777 ${RUNPOD_VOLUME_PATH}
+
+# Use Tini as PID 1
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Run the signal handler
+CMD ["/usr/local/bin/signal_handler.sh"]

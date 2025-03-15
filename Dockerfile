@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR ${APP_DIR}
 
 # Create app directory structure
-RUN mkdir -p ${APP_DIR}/app
+RUN mkdir -p ${APP_DIR}/app ${RUNPOD_VOLUME_PATH}/app
 
 # Copy application files
 COPY app/ ${APP_DIR}/app/
@@ -30,11 +30,19 @@ COPY signal_handler.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/signal_handler.sh && \
     sed -i 's/\r$//' /usr/local/bin/signal_handler.sh
 
-# Debug: List contents to verify files
-RUN echo "Contents of ${APP_DIR}:" && \
+# Create symbolic links for flexibility
+RUN ln -sf ${APP_DIR}/app/* ${RUNPOD_VOLUME_PATH}/app/
+
+# Debug: List contents to verify files and links
+RUN echo "=== Directory Structure ===" && \
+    echo "APP_DIR contents:" && \
     ls -la ${APP_DIR} && \
-    echo "Contents of ${APP_DIR}/app:" && \
-    ls -la ${APP_DIR}/app
+    echo "\nAPP_DIR/app contents:" && \
+    ls -la ${APP_DIR}/app && \
+    echo "\nRUNPOD_VOLUME_PATH contents:" && \
+    ls -la ${RUNPOD_VOLUME_PATH} && \
+    echo "\nRUNPOD_VOLUME_PATH/app contents:" && \
+    ls -la ${RUNPOD_VOLUME_PATH}/app
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
@@ -47,8 +55,8 @@ RUN mkdir -p ${RUNPOD_VOLUME_PATH}/models/flux1 \
 # Set permissions for the volume mount point
 RUN chmod -R 777 ${RUNPOD_VOLUME_PATH}
 
-# Use Tini as PID 1
-ENTRYPOINT ["/usr/bin/tini", "--"]
+# Use Tini as PID 1 with subreaper mode
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
 
 # Run the signal handler
 CMD ["/usr/local/bin/signal_handler.sh"]

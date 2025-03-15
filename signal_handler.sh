@@ -23,55 +23,16 @@ trap 'handle_sigterm' SIGTERM
 trap 'handle_sigint' SIGINT
 
 # Debug information
-echo "=== Environment Debug Information ==="
+echo "=== Environment ==="
 echo "Current directory: $(pwd)"
 echo "APP_DIR: ${APP_DIR}"
-echo "RUNPOD_VOLUME_PATH: ${RUNPOD_VOLUME_PATH}"
-echo ""
+echo "Contents of /runpod-volume/app:"
+ls -la /runpod-volume/app
 
-echo "=== Directory Structure ==="
-echo "Root directory contents:"
-ls -la /
-echo ""
-echo "APP_DIR contents:"
-ls -la ${APP_DIR}
-echo ""
-echo "APP_DIR/app contents:"
-ls -la ${APP_DIR}/app
-echo ""
-echo "RUNPOD_VOLUME_PATH contents:"
-ls -la ${RUNPOD_VOLUME_PATH}
-echo ""
-
-# Start the Python application
+# Start the application
 echo "Starting Flux application..."
-
-# Check both potential locations
-APP_PATHS=(
-    "${APP_DIR}/app/app.py"
-    "${RUNPOD_VOLUME_PATH}/app/app.py"
-)
-
-FOUND_APP=""
-for path in "${APP_PATHS[@]}"; do
-    echo "Checking for app at: $path"
-    if [ -f "$path" ]; then
-        echo "Found app at: $path"
-        FOUND_APP="$path"
-        break
-    fi
-done
-
-if [ -z "$FOUND_APP" ]; then
-    echo "Error: app.py not found in any of the expected locations!"
-    echo "Tried:"
-    printf '%s\n' "${APP_PATHS[@]}"
-    exit 1
-fi
-
-# Run the application from where we found it
-echo "Running app from: $FOUND_APP"
-python3 -u "$FOUND_APP" &
+cd /runpod-volume/app
+python3 -u app.py &
 
 # Store child PID
 CHILD_PID=$!
